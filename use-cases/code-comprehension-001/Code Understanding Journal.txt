@@ -1,4 +1,4 @@
-###Exercise Part 1: Understanding a Specific Feature
+###-------------Exercise Part 1: Understanding a Specific Feature
 
 1. The main components involved in task creation/updates
 cli.py, the file that direclty handles arguements passed in the terminal
@@ -9,7 +9,7 @@ storage.py, contains functions that interact with the json file where the tasks 
 2. The execution flow when a task is created/updated
 
 A command is typed using the interface handled by cli.py
-The arguments are parsed to  a function in task_manager.py
+The arguments are parsed to a function in task_manager.py
 When a task is created: 
 task_manager.py calls the function create_task().
 The Task class from models.py creates a task with a new UUID.
@@ -23,15 +23,61 @@ storage.py uses TaskEncoder for the information to be in a dictionary
 Storage.py stored the task in a JSON file by calling json.dump().
 tasks.json is updated.
 
-
 3. How data is stored and retrieved
 
-Data is stored in a JSON file called tasts.json.
+Data is stored in a JSON file called tasks.json.
 Storage.py stores the task in a JSON file by calling json.dump().
 storage.py loads the JSON file where all tasks are stored by calling json.load().
 
 4. Any interesting design patterns you discovered
 I don't really understand by "design patterns" what is meant or maybe I am overthinking it. 
-cli.py contains a lot of if else blocks. 
-When more features need to be added, the chain can be longer
-And it can be difficult to test the individual features without triggering the whole blocks
+
+
+
+##------------------Exercise Part 2: Deepen Understanding Through Guided Questions
+
+1. Initial Understanding vs What was discovered
+
+I viewed the program as a linear. A simple linear flow from cli.py to JSSON. 
+I discovered "state management". The code doesn't only read or edit or write 1 line to change a single item.
+The whole file is fully read, modified in memeory and fully written replacing the old file 
+
+2. The key insights the guided questions helped you uncover
+and any misconceptions you had that were clarified
+
+The code doesn't only read or edit or write 1 line to change a single item.
+The whole file is fully read, modified in memeory and fully written replacing the old file 
+
+task_manager.py does the validation while the CLI just collects strings.
+The input and the validation/rules makes the code more stable 
+
+When a program runs for the first time, we don't assume the file already exists.
+The program must check if it exits before it can read it otherwise it will crash
+due to a FileNotFoundError. 
+
+When a task is updated, the program must loop through the list one item at a time to find the matching ID 
+
+
+
+##------------------Exercise Part 3: Mapping Data flow
+
+1. The flow of data 
+Terminal (user provides raw strings)--> 
+cli.py (strings are turned into a structured python object) --> 
+models.py (a Task object is created with a unique UUID)--> 
+task_manager.py (object is passed to a list)-->
+ storage.py (object is convereted into a dictionary and written as a JSON string)
+
+2. The state changes that occur during task completion
+When the task status changes to done, the program doesn't just change one word in the file
+it takes the entire updated list from memory and replaces the old file content with the new state.
+
+3. Potential points of failure in this process
+If the tasks.json is manually updated, the next json.load() will fail.
+If the UUID is an incorrect string, a match won't be found resulting in an error. 
+
+4. How the application persists these changes
+Flat-File Persistence via the json module.
+It reads the entire file into a Python list, 
+all changes happen to that list in the computer's temporary memory and
+every time a change is made the program stops everything to save the current list to tasks.json.
